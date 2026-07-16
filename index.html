@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talent Pool Mapping — Asesmen Kekuatan Utama</title>
+<style>
+  :root{
+    --ink:#1c2b33;
+    --paper:#f6f4ee;
+    --card:#ffffff;
+    --line:#dfd9c9;
+    --accent:#2f6f6b;   /* deep teal */
+    --accent-2:#c96a3c; /* clay/ochre accent, sparing */
+    --muted:#6b7a80;
+    --O:#3f8fb0;
+    --C:#c96a3c;
+    --E:#5c9a6a;
+    --A:#b0834e;
+    --N:#7d6a9c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family: "Iowan Old Style","Georgia","Source Serif Pro",serif;
+    line-height:1.5;
+  }
+  .utility{ font-family: "Inter","Helvetica Neue",Arial,sans-serif; }
+  header{
+    padding:36px 24px 20px;
+    border-bottom:1px solid var(--line);
+    max-width:920px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    font-family:"Inter",sans-serif;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  h1{
+    font-size:28px;
+    margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  .sub{ color:var(--muted); font-size:14.5px; max-width:640px; }
+  main{ max-width:920px; margin:0 auto; padding:28px 24px 80px; }
+
+  /* ---- Intro ---- */
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:24px;
+  }
+  .start-btn{
+    font-family:"Inter",sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    padding:13px 22px;
+    border-radius:3px;
+    cursor:pointer;
+    letter-spacing:.01em;
+  }
+  .start-btn:hover{ background:#26534f; }
+  .note{
+    font-family:"Inter",sans-serif;
+    font-size:12.5px;
+    color:var(--muted);
+    margin-top:14px;
+    border-left:2px solid var(--line);
+    padding-left:10px;
+  }
+
+  /* ---- Test ---- */
+  #test{ display:none; }
+  .progress-wrap{
+    font-family:"Inter",sans-serif;
+    font-size:12px;
+    color:var(--muted);
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .progress-bar{
+    height:3px;
+    background:var(--line);
+    border-radius:2px;
+    overflow:hidden;
+    margin-bottom:28px;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    width:0%;
+    transition:width .25s ease;
+  }
+  .item-index{
+    font-family:"Inter",sans-serif;
+    font-size:11px;
+    color:var(--accent-2);
+    letter-spacing:.1em;
+    margin-bottom:8px;
+  }
+  .statement{
+    font-size:22px;
+    margin:0 0 26px;
+    max-width:600px;
+  }
+  .scale{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .scale button{
+    font-family:"Inter",sans-serif;
+    flex:1;
+    min-width:120px;
+    padding:14px 10px;
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:3px;
+    cursor:pointer;
+    font-size:13px;
+    text-align:center;
+    color:var(--ink);
+  }
+  .scale button:hover{ border-color:var(--accent); background:#eef5f4; }
+  .nav-row{
+    display:flex;
+    justify-content:space-between;
+    margin-top:26px;
+    font-family:"Inter",sans-serif;
+  }
+  .ghost-btn{
+    background:none;
+    border:1px solid var(--line);
+    padding:9px 16px;
+    border-radius:3px;
+    cursor:pointer;
+    font-size:13px;
+    color:var(--muted);
+  }
+  .ghost-btn:disabled{ opacity:.35; cursor:default; }
+
+  /* ---- Results ---- */
+  #results{ display:none; }
+  .result-head{ text-align:center; margin-bottom:8px; }
+  .result-head h2{ font-size:24px; margin:0 0 4px; }
+  .result-head p{ color:var(--muted); font-size:13.5px; font-family:"Inter",sans-serif; }
+
+  .radar-block{
+    display:flex;
+    justify-content:center;
+    margin:20px 0 8px;
+  }
+
+  .strength-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:14px;
+    margin-top:22px;
+  }
+  .strength-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-left:5px solid var(--accent);
+    border-radius:3px;
+    padding:16px 18px;
+  }
+  .strength-card.rank1{
+    border-left-color:var(--accent-2);
+    background:#fdf7f1;
+  }
+  .strength-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-family:"Inter",sans-serif;
+  }
+  .strength-name{ font-family:"Georgia",serif; font-size:18px; font-weight:700; }
+  .strength-score{ font-size:13px; color:var(--muted); }
+  .strength-badge{
+    display:inline-block;
+    font-family:"Inter",sans-serif;
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#fff;
+    background:var(--accent-2);
+    padding:2px 8px;
+    border-radius:10px;
+    margin-right:8px;
+  }
+  .strength-desc{ font-size:14px; margin:8px 0 10px; }
+  .strength-comp{
+    font-family:"Inter",sans-serif;
+    font-size:12.5px;
+    color:var(--accent);
+  }
+
+  .disclaimer{
+    margin-top:30px;
+    background:#eef2ee;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:16px 18px;
+    font-family:"Inter",sans-serif;
+    font-size:12.5px;
+    color:#3d4a4c;
+    line-height:1.6;
+  }
+  .disclaimer b{ color:var(--ink); }
+
+  .id-fields{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin:18px 0 6px;
+    font-family:"Inter",sans-serif;
+  }
+  .id-field{ flex:1; min-width:160px; }
+  .id-field label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:5px;
+  }
+  .id-field .req{ color:var(--accent-2); }
+  .id-field input{
+    width:100%;
+    font-family:"Inter",sans-serif;
+    font-size:14px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .id-field input:focus{ outline:none; border-color:var(--accent); }
+  .id-error{
+    display:none;
+    font-family:"Inter",sans-serif;
+    font-size:12.5px;
+    color:#a4432b;
+    margin-bottom:14px;
+  }
+
+  .action-row{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    margin-top:26px;
+    min-height:46px;
+  }
+  .download-btn{
+    font-family:"Inter",sans-serif;
+    font-weight:600;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    padding:12px 24px;
+    border-radius:3px;
+    cursor:pointer;
+    font-size:13.5px;
+  }
+  .download-btn:hover{ background:#26534f; }
+  .download-btn:disabled{ opacity:.5; cursor:default; }
+  .retake{
+    position:absolute;
+    right:0;
+    top:50%;
+    transform:translateY(-50%);
+  }
+  .retake button{
+    font-family:"Inter",sans-serif;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--muted);
+    padding:9px 15px;
+    border-radius:3px;
+    cursor:pointer;
+    font-size:12.5px;
+  }
+  .pdf-status{
+    text-align:center;
+    font-family:"Inter",sans-serif;
+    font-size:12px;
+    color:var(--muted);
+    margin-top:10px;
+  }
+
+  @media(max-width:600px){
+    .statement{ font-size:19px; }
+    h1{ font-size:23px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Talent Pool Mapping · SMA Avicenna Jagakarsa</div>
+  <h1>Asesmen Pemetaan Potensi Siswa</h1>
+  <p class="sub">Mengukur lima kekuatan kepribadian dasar sebagai titik awal pemetaan minat dan potensi siswa dalam ajang kompetisi.</p>
+</header>
+
+<main>
+
+  <!-- INTRO -->
+  <section id="intro" class="card">
+    <p style="margin-top:0">Asesmen ini terdiri dari <b>44 pernyataan singkat</b> tentang diri Anda. Tidak ada jawaban benar atau salah — jawablah sesuai dengan diri Anda apa adanya. Waktu pengerjaan sekitar 8–10 menit.</p>
+
+    <div class="id-fields">
+      <div class="id-field">
+        <label for="fieldKelas">Kelas <span class="req">*</span></label>
+        <input type="text" id="fieldKelas" placeholder="mis. IX-A">
+      </div>
+      <div class="id-field">
+        <label for="fieldAbsen">Nomor Absen <span class="req">*</span></label>
+        <input type="text" id="fieldAbsen" placeholder="mis. 17">
+      </div>
+    </div>
+    <div class="id-error" id="idError">Mohon isi kolom Kelas dan Nomor Absen terlebih dahulu.</div>
+
+    <button class="start-btn" onclick="startTest()">Mulai Asesmen</button>
+    <div class="note">Hasil akan menampilkan lima kekuatan utama Anda dalam bentuk grafik radar, beserta interpretasi singkat dan kaitannya dengan kategori ajang kompetensi.</div>
+  </section>
+
+  <!-- TEST -->
+  <section id="test">
+    <div class="progress-wrap">
+      <span id="qcount">Pernyataan 1 dari 44</span>
+      <span id="qpercent">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="item-index">SAYA MELIHAT DIRI SAYA SEBAGAI SESEORANG YANG...</div>
+    <p class="statement" id="statementText"></p>
+
+    <div class="scale" id="scaleButtons">
+      <button data-v="1">Sangat Tidak Setuju</button>
+      <button data-v="2">Tidak Setuju</button>
+      <button data-v="3">Netral</button>
+      <button data-v="4">Setuju</button>
+      <button data-v="5">Sangat Setuju</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="ghost-btn" id="backBtn" onclick="prevItem()">← Kembali</button>
+      <span class="utility" style="font-size:12px;color:var(--muted);align-self:center;">Klik salah satu pilihan untuk lanjut otomatis</span>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results">
+    <div id="pdfArea">
+      <div class="result-head">
+        <div class="eyebrow" style="text-align:center">Hasil Asesmen</div>
+        <h2>Lima Kekuatan Utama Anda</h2>
+        <p>Dasar pemetaan potensi untuk pengarahan minat ajang kompetensi</p>
+        <p class="utility" id="idSummary" style="font-size:12.5px;color:var(--muted);margin-top:-4px;"></p>
+      </div>
+
+      <div class="radar-block" id="radarBlock"></div>
+
+      <div class="strength-grid" id="strengthGrid"></div>
+
+      <div class="disclaimer">
+        Item pernyataan pada instrumen ini menggunakan <b>Big Five Inventory (BFI-44; John, Donahue &amp; Kentle, 1991)</b>, direkomendasikan dan disetujui oleh psikolog sekolah. Skoring mengikuti kaidah baku BFI-44 termasuk item reverse-scored. Seluruh hasil bersifat <b>sugestif/rekomendasi, bukan penilaian final</b>, dan disarankan didiskusikan bersama guru BK dan Psikolog sekolah sebelum digunakan sebagai dasar keputusan.
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="download-btn" id="downloadBtn" onclick="downloadPdf()">Unduh PDF</button>
+      <div class="retake">
+        <button onclick="location.reload()">Ulangi Asesmen</button>
+      </div>
+    </div>
+    <div class="pdf-status" id="pdfStatus"></div>
+  </section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+/* ============ BFI-44 ITEMS (Indonesian) ============ */
+/* trait codes: O C E A N | r = reverse scored */
+const items = [
+ {t:"E", r:false, s:"banyak bicara"},
+ {t:"A", r:true,  s:"cenderung mencari-cari kesalahan orang lain"},
+ {t:"C", r:false, s:"melakukan pekerjaan secara menyeluruh dan tuntas"},
+ {t:"N", r:false, s:"mudah murung atau sedih"},
+ {t:"O", r:false, s:"orisinal, suka memunculkan ide-ide baru"},
+ {t:"E", r:true,  s:"cenderung pendiam / tertutup"},
+ {t:"A", r:false, s:"suka membantu dan tidak mementingkan diri sendiri"},
+ {t:"C", r:true,  s:"kadang agak ceroboh"},
+ {t:"N", r:true,  s:"santai, mampu menangani stres dengan baik"},
+ {t:"O", r:false, s:"penuh rasa ingin tahu tentang banyak hal"},
+ {t:"E", r:false, s:"penuh energi"},
+ {t:"A", r:true,  s:"mudah memulai pertengkaran dengan orang lain"},
+ {t:"C", r:false, s:"pekerja yang bisa diandalkan"},
+ {t:"N", r:false, s:"mudah merasa tegang"},
+ {t:"O", r:false, s:"cerdas, suka berpikir mendalam"},
+ {t:"E", r:false, s:"mudah menularkan semangat kepada orang lain"},
+ {t:"A", r:false, s:"memiliki sifat pemaaf"},
+ {t:"C", r:true,  s:"cenderung kurang teratur"},
+ {t:"N", r:false, s:"sering merasa khawatir"},
+ {t:"O", r:false, s:"memiliki imajinasi yang aktif"},
+ {t:"E", r:true,  s:"cenderung diam di keramaian"},
+ {t:"A", r:false, s:"pada dasarnya mudah percaya pada orang lain"},
+ {t:"C", r:true,  s:"cenderung malas"},
+ {t:"N", r:true,  s:"stabil secara emosi, tidak mudah kesal"},
+ {t:"O", r:false, s:"penuh daya cipta / inventif"},
+ {t:"E", r:false, s:"memiliki kepribadian yang tegas"},
+ {t:"A", r:true,  s:"kadang bersikap dingin dan berjarak"},
+ {t:"C", r:false, s:"tekun sampai tugas selesai"},
+ {t:"N", r:false, s:"suasana hati mudah berubah"},
+ {t:"O", r:false, s:"menghargai pengalaman seni dan estetika"},
+ {t:"E", r:true,  s:"kadang pemalu, segan tampil"},
+ {t:"A", r:false, s:"penuh pertimbangan dan baik pada hampir semua orang"},
+ {t:"C", r:false, s:"mengerjakan sesuatu secara efisien"},
+ {t:"N", r:true,  s:"tetap tenang dalam situasi menegangkan"},
+ {t:"O", r:true,  s:"lebih suka pekerjaan yang rutin"},
+ {t:"E", r:false, s:"periang dan mudah bergaul"},
+ {t:"A", r:true,  s:"kadang bersikap kasar pada orang lain"},
+ {t:"C", r:false, s:"membuat rencana dan menjalankannya sampai selesai"},
+ {t:"N", r:false, s:"mudah merasa gugup"},
+ {t:"O", r:false, s:"suka merenung dan bermain dengan ide-ide"},
+ {t:"O", r:true,  s:"kurang tertarik pada hal-hal seni"},
+ {t:"A", r:false, s:"suka bekerja sama dengan orang lain"},
+ {t:"C", r:true,  s:"mudah teralihkan perhatiannya"},
+ {t:"O", r:false, s:"cukup mendalami seni, musik, atau sastra"}
+];
+
+const traitInfo = {
+  O:{name:"Openness to Experience", label:"Keterbukaan", color:"var(--O)",
+     high:"terbuka pada hal baru, kreatif, imajinatif, dan suka mengeksplorasi ide.",
+     comp:"Cocok diarahkan ke: lomba karya ilmiah, seni & desain, inovasi/riset, debat isu global."},
+  C:{name:"Conscientiousness", label:"Kehati-hatian", color:"var(--C)",
+     high:"disiplin, terorganisir, pekerja keras, dan tepat waktu.",
+     comp:"Cocok diarahkan ke: olimpiade akademik, manajemen proyek/organisasi, kompetisi presisi (robotik, akuntansi)."},
+  E:{name:"Extraversion", label:"Ekstraversi", color:"var(--E)",
+     high:"aktif, komunikatif, percaya diri di depan umum, dan mudah bergaul.",
+     comp:"Cocok diarahkan ke: pidato/debat, MC & presentasi, kepemimpinan (OSIS/ketua tim), olahraga tim."},
+  A:{name:"Agreeableness", label:"Keramahan", color:"var(--A)",
+     high:"kooperatif, empatik, dapat dipercaya, dan mengutamakan harmoni.",
+     comp:"Cocok diarahkan ke: kegiatan sosial/relawan, mediasi & kolaborasi tim, konseling sebaya."},
+  N:{name:"Neuroticism", label:"Stabilitas Emosi", color:"var(--N)",
+     high:"reaktif secara emosi dan cenderung mudah tegang menghadapi tekanan.",
+     lowIsStrength:true,
+     highLowFlip:"tenang, tahan tekanan, dan stabil secara emosi.",
+     comp:"Skor rendah cocok diarahkan ke: kompetisi bertekanan tinggi (lomba cepat tepat, simulasi, kompetisi live)."}
+};
+
+let current = 0;
+const answers = new Array(items.length).fill(null);
+let studentInfo = { kelas:'', absen:'' };
+
+function startTest(){
+  const kelas = document.getElementById('fieldKelas').value.trim();
+  const absen = document.getElementById('fieldAbsen').value.trim();
+  const errEl = document.getElementById('idError');
+
+  if(!kelas || !absen){
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  studentInfo = { kelas, absen };
+
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('test').style.display = 'block';
+  renderItem();
+}
+
+function renderItem(){
+  document.getElementById('statementText').textContent = items[current].s;
+  document.getElementById('qcount').textContent = `Pernyataan ${current+1} dari ${items.length}`;
+  document.getElementById('qpercent').textContent = Math.round((current/items.length)*100)+'%';
+  document.getElementById('progressFill').style.width = (current/items.length*100)+'%';
+  document.getElementById('backBtn').disabled = current === 0;
+
+  [...document.querySelectorAll('.scale button')].forEach(btn=>{
+    btn.style.borderColor = 'var(--line)';
+    btn.style.background = '#fff';
+    if(parseInt(btn.dataset.v) === answers[current]){
+      btn.style.borderColor = 'var(--accent)';
+      btn.style.background = '#eef5f4';
+    }
+    btn.onclick = ()=> selectAnswer(parseInt(btn.dataset.v));
+  });
+}
+
+function selectAnswer(v){
+  answers[current] = v;
+  if(current < items.length - 1){
+    current++;
+    renderItem();
+  } else {
+    finishTest();
+  }
+}
+
+function prevItem(){
+  if(current > 0){
+    current--;
+    renderItem();
+  }
+}
+
+function finishTest(){
+  document.getElementById('test').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('idSummary').textContent =
+    `Kelas ${studentInfo.kelas} · No. Absen ${studentInfo.absen} · ${new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'})}`;
+  const scores = computeScores();
+  renderRadar(scores);
+  renderStrengths(scores);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+async function downloadPdf(){
+  const btn = document.getElementById('downloadBtn');
+  const status = document.getElementById('pdfStatus');
+  btn.disabled = true;
+  status.textContent = 'Menyiapkan PDF…';
+
+  try{
+    const area = document.getElementById('pdfArea');
+    const canvas = await html2canvas(area, { scale: 2, backgroundColor: '#f6f4ee', useCORS: true });
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pageWidth - 20; // 10mm margin each side
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 10;
+
+    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+    heightLeft -= (pageHeight - 20);
+
+    while(heightLeft > 0){
+      position = heightLeft - imgHeight + 10;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - 20);
+    }
+
+    const filename = `Hasil-Talent-Mapping_Kelas-${studentInfo.kelas}_Absen-${studentInfo.absen}.pdf`
+      .replace(/\s+/g,'-');
+    pdf.save(filename);
+    status.textContent = 'PDF berhasil diunduh.';
+  }catch(err){
+    console.error(err);
+    status.textContent = 'Gagal membuat PDF, silakan coba lagi.';
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function computeScores(){
+  const sums = {O:0,C:0,E:0,A:0,N:0};
+  const counts = {O:0,C:0,E:0,A:0,N:0};
+  items.forEach((it,i)=>{
+    let v = answers[i] ?? 3;
+    if(it.r) v = 6 - v;
+    sums[it.t]+=v;
+    counts[it.t]++;
+  });
+  const pct = {};
+  Object.keys(sums).forEach(k=>{
+    const avg = sums[k]/counts[k]; // 1..5
+    pct[k] = Math.round(((avg-1)/4)*100*100)/100; // 0..100
+  });
+  return pct;
+}
+
+/* ---- Radar chart (pure SVG) ---- */
+function renderRadar(scores){
+  const order = ['O','C','E','A','N'];
+  const labels = {O:'Openness',C:'Conscientiousness',E:'Extraversion',A:'Agreeableness',N:'Neuroticism'};
+  const cx=180, cy=170, R=125;
+  const levels=5;
+  const angle = (i)=> (-Math.PI/2) + i*(2*Math.PI/order.length);
+
+  const point = (i, frac)=>{
+    const a = angle(i);
+    return [cx + Math.cos(a)*R*frac, cy + Math.sin(a)*R*frac];
+  };
+
+  let gridRings = '';
+  for(let l=1; l<=levels; l++){
+    const frac = l/levels;
+    const pts = order.map((_,i)=>point(i,frac).join(',')).join(' ');
+    gridRings += `<polygon points="${pts}" fill="none" stroke="#dfd9c9" stroke-width="1"/>`;
+  }
+
+  let spokes = '';
+  let labelEls = '';
+  order.forEach((k,i)=>{
+    const [x,y] = point(i,1);
+    spokes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#dfd9c9" stroke-width="1"/>`;
+    const [lx,ly] = point(i,1.22);
+    labelEls += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle"
+                  font-family="Inter,sans-serif" font-size="11" fill="#1c2b33" font-weight="600">${labels[k]}</text>`;
+  });
+
+  const dataPts = order.map((k,i)=> point(i, scores[k]/100).join(',')).join(' ');
+
+  const svg = `
+  <svg width="360" height="340" viewBox="0 0 360 340" xmlns="http://www.w3.org/2000/svg">
+    ${gridRings}
+    ${spokes}
+    <polygon points="${dataPts}" fill="#2f6f6b" fill-opacity="0.28" stroke="#2f6f6b" stroke-width="2"/>
+    ${order.map((k,i)=>{const [x,y]=point(i,scores[k]/100); return `<circle cx="${x}" cy="${y}" r="3.5" fill="#c96a3c"/>`}).join('')}
+    ${labelEls}
+  </svg>`;
+  document.getElementById('radarBlock').innerHTML = svg;
+}
+
+function renderStrengths(scores){
+  const order = ['O','C','E','A','N'];
+  // build display list; for Neuroticism, "strength" = emotional stability = 100 - score
+  const display = order.map(k=>{
+    const info = traitInfo[k];
+    const raw = scores[k];
+    const strengthScore = k === 'N' ? Math.round((100 - raw)*100)/100 : raw;
+    return {k, info, raw, strengthScore};
+  });
+  display.sort((a,b)=> b.strengthScore - a.strengthScore);
+
+  const grid = document.getElementById('strengthGrid');
+  grid.innerHTML = '';
+  display.forEach((d, idx)=>{
+    const info = d.info;
+    const desc = d.k === 'N' ? info.highLowFlip : info.high;
+    const div = document.createElement('div');
+    div.className = 'strength-card' + (idx===0 ? ' rank1' : '');
+    div.style.borderLeftColor = info.color;
+    div.innerHTML = `
+      <div class="strength-top">
+        <span>${idx===0 ? '<span class="strength-badge">Kekuatan Dominan</span>' : ''}<span class="strength-name">${info.label}</span></span>
+        <span class="strength-score utility">${d.strengthScore.toFixed(0)}%</span>
+      </div>
+      <div class="strength-desc">Kecenderungan ${desc}</div>
+      <div class="strength-comp">${info.comp}</div>
+    `;
+    grid.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
